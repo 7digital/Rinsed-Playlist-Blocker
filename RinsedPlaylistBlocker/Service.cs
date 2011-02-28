@@ -21,8 +21,6 @@ namespace RinsedPlaylistBlocker
 
 		public void Start()
 		{
-			Debugger.Break();
-
 			ConfigureLogging();
 
 			_timer.Start();
