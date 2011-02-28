@@ -29,10 +29,9 @@ namespace RinsedPlaylistBlocker
 
 		public void Unmute()
 		{
-			if (_leftVol <= 0 && _rightVol <= 0)
-				return;
+			if (_leftVol > 0 && _rightVol > 0)
+				SetVolume(_leftVol, _rightVol);
 
-			SetVolume(_leftVol, _rightVol);
 			Muted = false;
 		}
 
