@@ -7,7 +7,6 @@ namespace RinsedPlaylistBlocker
 	internal class Blocker
 	{
 		private readonly SixMusic _sixMusic = new SixMusic();
-		private bool _blocking;
 		private readonly Volume _volume = new Volume();
 
 		private readonly ILog _log = LogManager.GetLogger(typeof(Blocker).Name);
@@ -18,11 +17,11 @@ namespace RinsedPlaylistBlocker
 			var rinsedTracks = _sixMusic.RinsedTracks();
 			var rinsedTrack = rinsedTracks.Contains(currentlyPlaying);
 
-			if (!_blocking && rinsedTrack)
+			if (!_volume.Muted && rinsedTrack)
 			{
 				Block(currentlyPlaying);
 			}
-			else if (_blocking && !rinsedTrack)
+			else if (_volume.Muted && !rinsedTrack)
 			{
 				Unblock();
 			}
@@ -32,14 +31,12 @@ namespace RinsedPlaylistBlocker
 		{
 			_log.WarnFormat("Blocking: {0}.", currentlyPlaying);
 			_volume.Mute();
-			_blocking = true;
 		}
 
 		private void Unblock()
 		{
 			_log.WarnFormat("Unblocking.");
 			_volume.Unmute();
-			_blocking = false;
 		}
 	}
 }

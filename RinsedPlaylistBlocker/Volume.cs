@@ -6,6 +6,12 @@ namespace RinsedPlaylistBlocker
 	{
 		private ushort _leftVol;
 		private ushort _rightVol;
+		private bool _muted;
+
+		public bool Muted
+		{
+			get { return _muted; }
+		}
 
 		public void Mute()
 		{
@@ -15,10 +21,11 @@ namespace RinsedPlaylistBlocker
 			// First store the current volume settings
 			var returnValue = GetVolume(ref _leftVol, ref _rightVol);
 
-			if (returnValue == NativeMethods.MMSYSERR_NOERROR)
-			{
-				SetVolume(0, 0);
-			}
+			if (returnValue != NativeMethods.MMSYSERR_NOERROR)
+				throw new Exception(string.Format("Failed to retrieve current volume (Return value: {0}).", returnValue));
+
+			SetVolume(0, 0);
+			_muted = true;
 		}
 
 		public void Unmute()
@@ -27,16 +34,16 @@ namespace RinsedPlaylistBlocker
 				return;
 
 			SetVolume(_leftVol, _rightVol);
+			_muted = false;
 		}
 
-		private int GetVolume(ref ushort volLeft, ref ushort volRight)
+		private static int GetVolume(ref ushort volLeft, ref ushort volRight)
 		{
-			uint vol = 0;
-			int result = 9999;
+			uint vol;
 
 			// depending on the sound device type call one of the PInvoke functions
 			var hwo = IntPtr.Zero;
-					result = NativeMethods.waveOutGetVolume(hwo, out vol);
+			var result = NativeMethods.waveOutGetVolume(hwo, out vol);
 
 			if (result != NativeMethods.MMSYSERR_NOERROR)
 				return result;
@@ -48,7 +55,7 @@ namespace RinsedPlaylistBlocker
 			return NativeMethods.MMSYSERR_NOERROR;
 		}
 
-		private void SetVolume(ushort volLeft, ushort volRight)
+		private static void SetVolume(ushort volLeft, ushort volRight)
 		{
 			var vol = ((uint)volLeft & 0x0000ffff) | ((uint)volRight << 16);
 			NativeMethods.waveOutSetVolume(IntPtr.Zero, vol);
