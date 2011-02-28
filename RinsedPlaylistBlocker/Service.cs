@@ -17,6 +17,7 @@ namespace RinsedPlaylistBlocker
 		};
 
 		private readonly Blocker _blocker = new Blocker();
+		private bool _stopping;
 
 		public void Start()
 		{
@@ -37,7 +38,8 @@ namespace RinsedPlaylistBlocker
 				_log.Error("Oops.", ex);
 			}
 
-			_timer.Start();
+			if (!_stopping)
+				_timer.Start();
 		}
 
 		private static void ConfigureLogging()
@@ -47,6 +49,7 @@ namespace RinsedPlaylistBlocker
 
 		public void Stop()
 		{
+			_stopping = true;
 			_timer.Stop();
 		}
 	}
