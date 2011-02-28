@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace RinsedPlaylistBlocker
 {
-	public class NativeMethods
+	public static class NativeMethods
 	{
 		public const int MMSYSERR_NOERROR = 0;
 

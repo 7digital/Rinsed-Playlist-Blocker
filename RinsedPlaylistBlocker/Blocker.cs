@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using log4net;
 using RinsedPlaylistBlocker.LastFm;
 
 namespace RinsedPlaylistBlocker
@@ -9,6 +10,8 @@ namespace RinsedPlaylistBlocker
 		private bool _blocking;
 		private readonly Volume _volume = new Volume();
 
+		private readonly ILog _log = LogManager.GetLogger(typeof(Blocker).Name);
+
 		public void Check()
 		{
 			var currentlyPlaying = _sixMusic.CurrentlyPlaying();
@@ -17,7 +20,7 @@ namespace RinsedPlaylistBlocker
 
 			if (!_blocking && rinsedTrack)
 			{
-				Block();
+				Block(currentlyPlaying);
 			}
 			else if (_blocking && !rinsedTrack)
 			{
@@ -25,14 +28,16 @@ namespace RinsedPlaylistBlocker
 			}
 		}
 
-		private void Block()
+		private void Block(Track currentlyPlaying)
 		{
+			_log.WarnFormat("Blocking: {0}.", currentlyPlaying);
 			_volume.Mute();
 			_blocking = true;
 		}
 
 		private void Unblock()
 		{
+			_log.WarnFormat("Unblocking.");
 			_volume.Unmute();
 			_blocking = false;
 		}

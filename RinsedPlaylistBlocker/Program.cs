@@ -3,7 +3,7 @@ using Topshelf.Configuration.Dsl;
 
 namespace RinsedPlaylistBlocker
 {
-	class Program
+	public class Program
 	{
 		static void Main(string[] args)
 		{

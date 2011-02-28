@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Caching;
 using System.Xml.Linq;
+using log4net;
 
 namespace RinsedPlaylistBlocker.LastFm
 {
 	public class SixMusic
 	{
 		private readonly ObjectCache _cache = new MemoryCache("SixMusic");
+		private readonly ILog _log = LogManager.GetLogger(typeof(SixMusic).Name);
 
 		public IEnumerable<Track> RinsedTracks()
 		{
@@ -18,8 +20,20 @@ namespace RinsedPlaylistBlocker.LastFm
 
 			if (!_cache.Contains(key))
 			{
-				_cache.Add(new CacheItem(key, WeeklyTrackChart().Where(t => t.PlayCount > 10).ToList()), 
-					new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddHours(12) });
+				var rinsedTracks = WeeklyTrackChart().Where(t => t.PlayCount > 10).ToList();
+
+				_log.Warn("Rinsed tracks:");
+				foreach(var rinsedTrack in rinsedTracks)
+				{
+					_log.Warn(rinsedTrack);
+				}
+
+				var cacheItem = new CacheItem(key, rinsedTracks);
+				var cacheItemPolicy = new CacheItemPolicy
+				{
+					AbsoluteExpiration = DateTimeOffset.Now.AddHours(12)
+				};
+				_cache.Add(cacheItem, cacheItemPolicy);
 			}
 
 			return (IEnumerable<Track>) _cache[key];
@@ -27,6 +41,8 @@ namespace RinsedPlaylistBlocker.LastFm
 
 		private IEnumerable<Track> WeeklyTrackChart()
 		{
+			_log.Info("Retrieving weekly track chart:");
+
 			var request = WebRequest.Create("http://ws.audioscrobbler.com/2.0/user/bbc6music/weeklytrackchart.xml");
 			var response = request.GetResponse();
 
@@ -37,12 +53,14 @@ namespace RinsedPlaylistBlocker.LastFm
 				var root = document.Element("weeklytrackchart");
 				foreach (var trackNode in root.Elements("track"))
 				{
-					yield return new Track
+					var track = new Track
 					{
 						Artist = trackNode.Element("artist").Value,
 						Name = trackNode.Element("name").Value,
 						PlayCount = Convert.ToInt32(trackNode.Element("playcount").Value)
 					};
+					_log.Info(track);
+					yield return track;
 				}
 			}
 		}
@@ -60,11 +78,15 @@ namespace RinsedPlaylistBlocker.LastFm
 				var trackNode = root.Element("item");
 				var title = trackNode.Element("title").Value;
 				var split = title.Split('–');
-				return new Track
+				
+				var currentlyPlaying = new Track
 				{
 					Artist = split[0].Trim(),
 					Name = split[1].Trim(),
 				};
+				_log.InfoFormat("Currently playing: {0}", currentlyPlaying);
+
+				return currentlyPlaying;
 			}
 		}
 	}

@@ -55,5 +55,10 @@ namespace RinsedPlaylistBlocker.LastFm
 		{
 			return !Equals(left, right);
 		}
+
+		public override string ToString()
+		{
+			return string.Format("Artist: {0}, Name: {1}, PlayCount: {2}", Artist, Name, PlayCount);
+		}
 	}
 }
