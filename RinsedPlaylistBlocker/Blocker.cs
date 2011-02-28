@@ -8,7 +8,6 @@ namespace RinsedPlaylistBlocker
 	{
 		private readonly SixMusic _sixMusic = new SixMusic();
 		private readonly Volume _volume = new Volume();
-
 		private readonly ILog _log = LogManager.GetLogger(typeof(Blocker).Name);
 
 		public void Check()

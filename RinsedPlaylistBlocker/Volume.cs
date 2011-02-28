@@ -1,17 +1,16 @@
 using System;
+using log4net;
 
 namespace RinsedPlaylistBlocker
 {
 	public class Volume
 	{
+		private readonly ILog _log = LogManager.GetLogger(typeof(Volume).Name);
+
 		private ushort _leftVol;
 		private ushort _rightVol;
-		private bool _muted;
 
-		public bool Muted
-		{
-			get { return _muted; }
-		}
+		public bool Muted { get; private set; }
 
 		public void Mute()
 		{
@@ -25,7 +24,7 @@ namespace RinsedPlaylistBlocker
 				throw new Exception(string.Format("Failed to retrieve current volume (Return value: {0}).", returnValue));
 
 			SetVolume(0, 0);
-			_muted = true;
+			Muted = true;
 		}
 
 		public void Unmute()
@@ -34,10 +33,10 @@ namespace RinsedPlaylistBlocker
 				return;
 
 			SetVolume(_leftVol, _rightVol);
-			_muted = false;
+			Muted = false;
 		}
 
-		private static int GetVolume(ref ushort volLeft, ref ushort volRight)
+		private int GetVolume(ref ushort volLeft, ref ushort volRight)
 		{
 			uint vol;
 
@@ -52,11 +51,15 @@ namespace RinsedPlaylistBlocker
 			volLeft = (ushort)(vol & 0x0000ffff);
 			volRight = (ushort)(vol >> 16);
 
+			_log.InfoFormat("Current volume: L - {0}, R - {1}.", volLeft, volRight);
+
 			return NativeMethods.MMSYSERR_NOERROR;
 		}
 
-		private static void SetVolume(ushort volLeft, ushort volRight)
+		private void SetVolume(ushort volLeft, ushort volRight)
 		{
+			_log.InfoFormat("Setting volume: L - {0}, R - {1}.", volLeft, volRight);
+
 			var vol = ((uint)volLeft & 0x0000ffff) | ((uint)volRight << 16);
 			NativeMethods.waveOutSetVolume(IntPtr.Zero, vol);
 		}
